@@ -10,9 +10,17 @@ else(${CMAKE_VERSION} VERSION_LESS "2.8.12")
 endif(${CMAKE_VERSION} VERSION_LESS "2.8.12")
 
 if(NOT MSVC)
-  set(cmake_cxx_flags "${CMAKE_CXX_FLAGS} -wall -pedantic -wno-vla")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pedantic -Wno-vla")
 endif(NOT MSVC)
 
-find_package(Boost 1.63.0)
+set (CMAKE_CXX_STANDARD 11)
 
+#find_package(Boost 1.63.0)
+
+set(CMAKE_BINARY_DIR ${CMAKE_SOURCE_DIR}/bin)
+set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR})
+set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR})
+
+include_directories("${PROJECT_SOURCE_DIR}/src")
+add_executable(bpephrase ${PROJECT_SOURCE_DIR}/src/main.cc)
 
