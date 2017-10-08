@@ -111,17 +111,17 @@ depend:
 .PHONY : depend
 
 #=============================================================================
-# Target rules for targets named main
+# Target rules for targets named bpephrase
 
 # Build rule for target.
-main: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 main
-.PHONY : main
+bpephrase: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 bpephrase
+.PHONY : bpephrase
 
 # fast build rule for target.
-main/fast:
-	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/build
-.PHONY : main/fast
+bpephrase/fast:
+	$(MAKE) -f CMakeFiles/bpephrase.dir/build.make CMakeFiles/bpephrase.dir/build
+.PHONY : bpephrase/fast
 
 src/main.o: src/main.cc.o
 
@@ -129,7 +129,7 @@ src/main.o: src/main.cc.o
 
 # target to build an object file
 src/main.cc.o:
-	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/src/main.cc.o
+	$(MAKE) -f CMakeFiles/bpephrase.dir/build.make CMakeFiles/bpephrase.dir/src/main.cc.o
 .PHONY : src/main.cc.o
 
 src/main.i: src/main.cc.i
@@ -138,7 +138,7 @@ src/main.i: src/main.cc.i
 
 # target to preprocess a source file
 src/main.cc.i:
-	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/src/main.cc.i
+	$(MAKE) -f CMakeFiles/bpephrase.dir/build.make CMakeFiles/bpephrase.dir/src/main.cc.i
 .PHONY : src/main.cc.i
 
 src/main.s: src/main.cc.s
@@ -147,7 +147,7 @@ src/main.s: src/main.cc.s
 
 # target to generate assembly for a file
 src/main.cc.s:
-	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/src/main.cc.s
+	$(MAKE) -f CMakeFiles/bpephrase.dir/build.make CMakeFiles/bpephrase.dir/src/main.cc.s
 .PHONY : src/main.cc.s
 
 # Help Target
@@ -158,7 +158,7 @@ help:
 	@echo "... depend"
 	@echo "... rebuild_cache"
 	@echo "... edit_cache"
-	@echo "... main"
+	@echo "... bpephrase"
 	@echo "... src/main.o"
 	@echo "... src/main.i"
 	@echo "... src/main.s"

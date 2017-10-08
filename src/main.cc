@@ -1,9 +1,9 @@
 #include <iostream>
 #include <string>
 
-auto endl = "\n";
 int buffer_size = 65536;
 
 int main() {
+    auto endl = "\n";
     std::cout << "hello" << endl;
 }

@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 2.8)
-set(cmake_module_path ${CMAKE_CURRENT_SOURCE_DIR}/cmake ${CMAKE_MODULE_PATH})
+project(Bpephrase)
+set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake ${CMAKE_MODULE_PATH})
 
 if(${CMAKE_VERSION} VERSION_LESS "2.8.12")
   set(cmake_cxx_flags "${CMAKE_CXX_FLAGS} -std=c++11")
@@ -15,7 +16,10 @@ endif(NOT MSVC)
 
 set (CMAKE_CXX_STANDARD 11)
 
-#find_package(Boost 1.63.0)
+find_package(Boost)
+
+find_package(Cxxopts REQUIRED)
+include_directories( ${CXXOPTS_INCLUDE_DIR} )
 
 set(CMAKE_BINARY_DIR ${CMAKE_SOURCE_DIR}/bin)
 set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR})
