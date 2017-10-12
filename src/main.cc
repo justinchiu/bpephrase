@@ -24,5 +24,8 @@ int main(int argc, char** argv) {
 
     Dictionary dictionary(input, codes, output);
     dictionary.tokenizeText(dictionary.inputFilename, dictionary.corpus);
-    dictionary.getBigrams();
+    //dictionary.getBigrams();
+    //dictionary.getTrigrams();
+    //dictionary.getFourgrams();
+    dictionary.getFivegrams();
 }

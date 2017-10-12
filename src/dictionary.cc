@@ -61,6 +61,7 @@ void Dictionary::tokenizeText(std::string filename, Corpus & corpus) {
         std::vector<char>::iterator end = buffer.begin();
         Sentence sentence;
         sentence.reserve(32);
+        //sentence.push_back(bos);
         bool within_word = false;
         while (end != buffer.end()) {
             if (*end == ' ' || *end == '\t' || *end == '\r') {
@@ -82,8 +83,10 @@ void Dictionary::tokenizeText(std::string filename, Corpus & corpus) {
                     sentence.push_back(id);
                 }
                 if (!sentence.empty()) {
+                    //sentence.push_back(eos);
                     corpus.emplace_back(std::move(sentence));
                     sentence.clear();
+                    //sentence.push_back(bos);
                 }
                 within_word = false;
                 ++end;
