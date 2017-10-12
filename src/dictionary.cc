@@ -40,65 +40,106 @@ void Dictionary::initializeVocabulary() {
     pad = addWord(PAD);
 }
 
+void Dictionary::learnVocabulary(std::string filename) {
+    initializeVocabulary();
+    std::ifstream ifs(filename, std::ios::binary);
+    if (!ifs) {
+    }
+    ifs.seekg(0, std::ios::end);
+    std::streampos length = ifs.tellg();
+    ifs.seekg(0, std::ios::beg);
+
+    // load into memory
+    std::vector<char> buffer(length);
+    ifs.read(&buffer[0], length);
+
+    std::string token;
+    std::vector<char>::iterator begin = buffer.begin();
+    std::vector<char>::iterator end = buffer.begin();
+    bool within_word = false;
+    while (end != buffer.end()) {
+        if (*end == ' ' || *end == '\t' || *end == '\r') {
+            if (within_word) {
+                // If this is the end of word then we need to add the token.
+                // Just copy everything, it's fine.
+                token.assign(begin, end);
+                addWord(token);
+            }
+            // Ignore these characters and move begin to ++end.
+            ++end;
+            begin = end;
+            within_word = false;
+        } else if (*end == '\n') {
+            if (within_word) {
+                token.assign(begin, end);
+                addWord(token);
+            }
+            within_word = false;
+            ++end;
+            begin = end;
+        } else {
+            within_word = true;
+            ++end;
+        }
+    }
+    std::cout << "There are " << id_to_word.size() << " unique tokens in the vocabulary." << endl;
+}
+
 void Dictionary::tokenizeText(std::string filename, Corpus & corpus) {
     std::ifstream ifs(filename, std::ios::binary);
     corpus.clear();
-    if (ifs) {
-        ifs.seekg(0, std::ios::end);
-        std::streampos length = ifs.tellg();
-        ifs.seekg(0, std::ios::beg);
+    if (!ifs) {
+    }
+    ifs.seekg(0, std::ios::end);
+    std::streampos length = ifs.tellg();
+    ifs.seekg(0, std::ios::beg);
 
-        // load into memory
-        std::vector<char> buffer(length);
-        ifs.read(&buffer[0], length);
+    // load into memory
+    std::vector<char> buffer(length);
+    ifs.read(&buffer[0], length);
 
-        // premature optimization
-        //std::stringstream localstream;
-        //localstream.rdbuf()->pubsetbuf(&buffer[0], length);
+    // premature optimization
+    //std::stringstream localstream;
+    //localstream.rdbuf()->pubsetbuf(&buffer[0], length);
 
-        std::string token;
-        std::vector<char>::iterator begin = buffer.begin();
-        std::vector<char>::iterator end = buffer.begin();
-        Sentence sentence;
-        sentence.reserve(32);
-        //sentence.push_back(bos);
-        bool within_word = false;
-        while (end != buffer.end()) {
-            if (*end == ' ' || *end == '\t' || *end == '\r') {
-                if (within_word) {
-                    // If this is the end of word then we need to add the token.
-                    // Just copy everything, it's fine.
-                    token.assign(begin, end);
-                    int id = addWord(token);
-                    sentence.push_back(id);
-                }
-                // Ignore these characters and move begin to ++end.
-                ++end;
-                begin = end;
-                within_word = false;
-            } else if (*end == '\n') {
-                if (within_word) {
-                    token.assign(begin, end);
-                    int id = addWord(token);
-                    sentence.push_back(id);
-                }
-                if (!sentence.empty()) {
-                    //sentence.push_back(eos);
-                    corpus.emplace_back(std::move(sentence));
-                    sentence.clear();
-                    //sentence.push_back(bos);
-                }
-                within_word = false;
-                ++end;
-                begin = end;
-            } else {
-                within_word = true;
-                ++end;
+    std::string token;
+    std::vector<char>::iterator begin = buffer.begin();
+    std::vector<char>::iterator end = buffer.begin();
+    Sentence sentence;
+    sentence.reserve(32);
+    //sentence.push_back(bos);
+    bool within_word = false;
+    while (end != buffer.end()) {
+        if (*end == ' ' || *end == '\t' || *end == '\r') {
+            if (within_word) {
+                // If this is the end of word then we need to add the token.
+                // Just copy everything, it's fine.
+                token.assign(begin, end);
+                sentence.push_back(lookupWord(token));
             }
+            // Ignore these characters and move begin to ++end.
+            ++end;
+            begin = end;
+            within_word = false;
+        } else if (*end == '\n') {
+            if (within_word) {
+                token.assign(begin, end);
+                sentence.push_back(lookupWord(token));
+            }
+            if (!sentence.empty()) {
+                //sentence.push_back(eos);
+                corpus.emplace_back(std::move(sentence));
+                sentence.clear();
+                //sentence.push_back(bos);
+            }
+            within_word = false;
+            ++end;
+            begin = end;
+        } else {
+            within_word = true;
+            ++end;
         }
     }
-
-    std::cout << "There are " << id_to_word.size() << " unique tokens in the vocabulary." << endl;
 }
 
 }

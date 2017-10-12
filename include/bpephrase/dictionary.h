@@ -22,7 +22,6 @@ extern char endl;
 extern bool debug;
 
 struct heap_data;
-using Data = int;
 using Heap = boost::heap::binomial_heap<heap_data>;
 using Handle = Heap::handle_type;
 using Handles = std::vector<Handle>;
@@ -46,7 +45,7 @@ struct Ngram {
 
 struct heap_data {
     Handle handle;
-    Data data;
+    int data;
     int count;
 
     heap_data(int id, int c) 
@@ -58,9 +57,11 @@ struct heap_data {
 
 struct Dictionary {
   //private:
-    std::string inputFilename;
+    std::string trainFilename;
+    std::string validFilename;
+    std::string testFilename;
     std::string outputFilename;
-    Corpus corpus;
+    Corpus trainCorpus, validCorpus, testCorpus;
 
     int bos;
     int eos;
@@ -87,9 +88,13 @@ struct Dictionary {
     static const std::string PAD;
 
     Dictionary(
-      std::string inputFilename, 
+      std::string trainFilename, 
+      std::string validFilename, 
+      std::string testFilename, 
       std::string outputFilename
-    ) : inputFilename(inputFilename), 
+    ) : trainFilename(trainFilename), 
+        validFilename(validFilename),
+        testFilename(testFilename),
         outputFilename(outputFilename) {
     };
 
@@ -97,14 +102,13 @@ struct Dictionary {
 
     int lookupWord(const std::string& token);
     void initializeVocabulary();
+    void learnVocabulary(std::string filename);
 
     void tokenizeText(std::string filename, Corpus & corpus); 
 
     void saveTokenization() {
-        std::string tokenFilename = outputFilename + ".tokenization";
-        std::string corpusFilename = outputFilename + ".corpus";
+        std::string tokenFilename = trainFilename + ".tokenization";
         std::ofstream tokenFs(tokenFilename, std::ios::binary);
-        std::ofstream corpusFs(corpusFilename, std::ios::binary);
 
         std::stringstream tss;
         int i = 0;
@@ -115,15 +119,37 @@ struct Dictionary {
         std::string tokenOut = tss.str();
         tokenFs.write(tokenOut.c_str(), tokenOut.size());
 
-        for (const auto & sentence : corpus) {
-            //corpusFs.write(sentence.data(), sentence.size() * sizeof(int));
-            std::copy(sentence.begin(), sentence.end(), std::ostream_iterator<int>(corpusFs, ","));
-            corpusFs << '\n';
+        std::string trainF = trainFilename + ".tok";
+        std::ofstream trainFs(trainF, std::ios::binary);
+        for (const auto & sentence : trainCorpus) {
+            std::copy(sentence.begin(), sentence.end(),
+                std::ostream_iterator<int>(trainFs, ","));
+            trainFs << '\n';
+        }
+
+        std::string validF = validFilename + ".tok";
+        std::ofstream validFs(validF, std::ios::binary);
+        for (const auto & sentence : validCorpus) {
+            std::copy(sentence.begin(), sentence.end(),
+                std::ostream_iterator<int>(validFs, ","));
+            validFs << '\n';
+        }
+
+        std::string testF = testFilename + ".tok";
+        std::ofstream testFs(testF, std::ios::binary);
+        for (const auto & sentence : testCorpus) {
+            std::copy(sentence.begin(), sentence.end(),
+                std::ostream_iterator<int>(testFs, ","));
+            testFs << '\n';
         }
     }
 
     template <typename Ngram>
-    void extractNToFile(int n, Heap & heap, std::string filename, const std::vector<Ngram> & id_to_ngram) {
+    void extractNToFile(
+        int n, Heap & heap, 
+        std::string filename, 
+        const std::vector<Ngram> & id_to_ngram
+    ) {
         std::ofstream ofs(filename, std::ios::binary);
         for (int i = 0; i < n && !heap.empty(); ++i) {
             int id = heap.top().data;
@@ -133,7 +159,8 @@ struct Dictionary {
             std::stringstream ss;
             ss << i << '\t' << count << '\t';
             for (const auto & id : ngram) {
-                ss << id_to_word[id] << ' ';
+                //ss << id_to_word[id] << ' ';
+                ss << id << ' ';
             }
             ss << endl;
             std::string out = ss.str();
@@ -141,7 +168,7 @@ struct Dictionary {
         }
     }
 
-    void getBigrams() {
+    void getBigrams(const Corpus& corpus, std::string filename) {
         Heap heap{};
         Handles handles{};
 
@@ -167,10 +194,10 @@ struct Dictionary {
             }
         }
         std::cout << "Found " << id_to_bigram.size() << " bigrams" << endl;
-        extractNToFile<Bigram>(10000, heap, outputFilename + ".bigrams", id_to_bigram);
+        extractNToFile<Bigram>(10000, heap, filename + ".bigrams", id_to_bigram);
     };
 
-    void getTrigrams() {
+    void getTrigrams(const Corpus & corpus, std::string filename) {
         Heap heap{};
         Handles handles{};
 
@@ -198,11 +225,11 @@ struct Dictionary {
             }
         }
         std::cout << "Found " << id_to_trigram.size() << " trigrams" << endl;
-        extractNToFile<Trigram>(10000, heap, outputFilename + ".trigrams", id_to_trigram);
+        extractNToFile<Trigram>(10000, heap, filename + ".trigrams", id_to_trigram);
     };
 
 
-    void getFourgrams() {
+    void getFourgrams(const Corpus & corpus, std::string filename) {
         Heap heap{};
         Handles handles{};
 
@@ -232,10 +259,10 @@ struct Dictionary {
             }
         }
         std::cout << "Found " << id_to_fourgram.size() << " fourgrams" << endl;
-        extractNToFile<Fourgram>(10000, heap, outputFilename + ".fourgrams", id_to_fourgram);
+        extractNToFile<Fourgram>(10000, heap, filename + ".fourgrams", id_to_fourgram);
     };
 
-    void getFivegrams() {
+    void getFivegrams(const Corpus & corpus, std::string filename) {
         Heap heap{};
         Handles handles{};
 
@@ -247,7 +274,7 @@ struct Dictionary {
             auto fourth = s.begin() + 3;
             auto fifth  = s.begin() + 4;
             FivegramMap::iterator it;
-            //extractNToFile<Bigram>(10000, heap, outputFilename + ".bigrams", id_to_bigram);
+            //extractNToFile<Bigram>(10000, heap, filename + ".bigrams", id_to_bigram);
             while (fifth != s.end()) {
                 if ((it = fivegram_to_id.find({*first, *second, *third, *fourth, *fifth})) == fivegram_to_id.end()) {
                     int id = id_to_fivegram.size();
@@ -268,7 +295,7 @@ struct Dictionary {
             }
         }
         std::cout << "Found " << id_to_fivegram.size() << " fivegrams" << endl;
-        extractNToFile<Fivegram>(10000, heap, outputFilename + ".fivegrams", id_to_fivegram);
+        extractNToFile<Fivegram>(10000, heap, filename + ".fivegrams", id_to_fivegram);
     };
 };
 
