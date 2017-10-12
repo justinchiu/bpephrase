@@ -13,7 +13,6 @@ int buffer_size = 65536;
 int main(int argc, char** argv) {
     cxxopts::Options options = initOptions();
     options.parse(argc, argv);
-    auto endl = "\n";
     std::cout << "hello!" << endl;
 
     auto input = options["input"].as<std::string>();
@@ -24,5 +23,6 @@ int main(int argc, char** argv) {
     std::cout << "Output file: " << output << endl;
 
     Dictionary dictionary(input, codes, output);
-    dictionary.tokenizeText();
+    dictionary.tokenizeText(dictionary.inputFilename, dictionary.corpus);
+    dictionary.getBigrams();
 }

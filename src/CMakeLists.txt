@@ -1,4 +1,5 @@
 set(CMAKE_BINARY_DIR ${CMAKE_SOURCE_DIR}/bin)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR})
-add_executable(bpephrase ${PROJECT_SOURCE_DIR}/src/main.cc)
+add_executable(bpephrase ${PROJECT_SOURCE_DIR}/src/main.cc ${PROJECT_SOURCE_DIR}/src/dictionary.cc)
+target_link_libraries(bpephrase ${Boost_LIBRARIES})
