@@ -41,7 +41,7 @@ void Dictionary::initializeVocabulary() {
 }
 
 void Dictionary::tokenizeText(std::string filename, Corpus & corpus) {
-    std::ifstream ifs(filename);
+    std::ifstream ifs(filename, std::ios::binary);
     corpus.clear();
     if (ifs) {
         ifs.seekg(0, std::ios::end);

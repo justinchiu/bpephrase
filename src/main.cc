@@ -17,15 +17,14 @@ int main(int argc, char** argv) {
 
     auto input = options["input"].as<std::string>();
     std::cout << "Input file: " << input << endl;
-    auto codes = options["codes"].as<std::string>();
-    std::cout << "Codes file: " << codes << endl;
     auto output = options["output"].as<std::string>();
     std::cout << "Output file: " << output << endl;
 
-    Dictionary dictionary(input, codes, output);
+    Dictionary dictionary(input, output);
     dictionary.tokenizeText(dictionary.inputFilename, dictionary.corpus);
-    //dictionary.getBigrams();
-    //dictionary.getTrigrams();
-    //dictionary.getFourgrams();
+    dictionary.saveTokenization();
+    dictionary.getBigrams();
+    dictionary.getTrigrams();
+    dictionary.getFourgrams();
     dictionary.getFivegrams();
 }
