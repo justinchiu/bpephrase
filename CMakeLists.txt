@@ -15,7 +15,7 @@ else(${CMAKE_VERSION} VERSION_LESS "2.8.12")
 endif(${CMAKE_VERSION} VERSION_LESS "2.8.12")
 
 if(NOT MSVC)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pedantic -Wno-vla")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pedantic")
 endif(NOT MSVC)
 
 ###############################################################################
