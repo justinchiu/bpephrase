@@ -44,12 +44,11 @@ struct Ngram {
 };
 
 struct heap_data {
-    Handle handle;
+    //Handle handle;
     int data;
     int count;
 
-    heap_data(int id, int c) 
-      : data(id), count(c) {}
+    heap_data(int id, int c) : data(id), count(c) {}
     bool operator<(heap_data const & rhs) const {
         return count < rhs.count;
     }
@@ -159,7 +158,6 @@ struct Dictionary {
             std::stringstream ss;
             ss << i << '\t' << count << '\t';
             for (const auto & id : ngram) {
-                //ss << id_to_word[id] << ' ';
                 ss << id << ' ';
             }
             ss << endl;
@@ -168,135 +166,60 @@ struct Dictionary {
         }
     }
 
-    void getBigrams(const Corpus& corpus, std::string filename) {
-        Heap heap{};
-        Handles handles{};
-
-        for (const auto& s : corpus) {
-            if (s.size() < 1) continue;
+    template <typename Ngram, typename MapT>
+    void learnNgrams(int n, const Corpus& corpus, MapT & ngram_to_id, std::vector<Ngram> & id_to_ngram) {
+        std::cout << n << std::endl;
+        Ngram ngram;
+        for (const auto & s : corpus) {
+            if (s.size() < n) continue;
             auto first = s.begin();
-            auto second = ++s.begin();
-            BigramMap::iterator it;
-            while (second != s.end()) {
-                if ((it = bigram_to_id.find({*first, *second})) == bigram_to_id.end()) {
-                    int id = id_to_bigram.size();
-                    bigram_to_id.insert({{*first, *second}, id});
-                    id_to_bigram.push_back({*first, *second});
-                    Handle h = heap.push(heap_data(id, 1));
-                    handles.push_back(h);
-                } else {
-                    Handle h = handles[it->second];
-                    ++(*h).count;
-                    heap.increase(h);
+            while (first+n-1 != s.end()) {
+                std::copy(first, first+n, ngram.begin());
+                typename MapT::iterator it = ngram_to_id.find(ngram);
+                if (it == ngram_to_id.end()) {
+                    // do shit!!
+                    ngram_to_id.insert({ngram, id_to_ngram.size()});
+                    id_to_ngram.push_back(ngram);
                 }
                 ++first;
-                ++second;
             }
         }
-        std::cout << "Found " << id_to_bigram.size() << " bigrams" << endl;
-        extractNToFile<Bigram>(10000, heap, filename + ".bigrams", id_to_bigram);
-    };
+    }
 
-    void getTrigrams(const Corpus & corpus, std::string filename) {
-        Heap heap{};
-        Handles handles{};
-
-        for (const auto& s : corpus) {
-            if (s.size() < 3) continue;
+    template <typename Ngram, typename MapT>
+    void getNgrams(
+        int n, Corpus& corpus, MapT & ngram_to_id, std::vector<Ngram> & id_to_ngram, std::string filename) {
+        std::cout << n << std::endl;
+        Heap heap;
+        Handles handles;
+        std::unordered_map<int, Handle> handle_map;
+        Ngram ngram;
+        for (const auto & s : corpus) {
+            if (s.size() < n) continue;
             auto first = s.begin();
-            auto second = ++s.begin();
-            auto third = ++++s.begin();
-            TrigramMap::iterator it;
-            while (third != s.end()) {
-                if ((it = trigram_to_id.find({*first, *second, *third})) == trigram_to_id.end()) {
-                    int id = id_to_trigram.size();
-                    trigram_to_id.insert({{*first, *second, *third}, id});
-                    id_to_trigram.push_back({*first, *second, *third});
-                    Handle h = heap.push(heap_data(id, 1));
-                    handles.push_back(h);
+            while (first+n-1 != s.end()) {
+                std::copy(first, first+n, ngram.begin());
+                typename MapT::iterator it = ngram_to_id.find(ngram);
+                if (it == ngram_to_id.end()) {
+                    // don't do shit!!
                 } else {
-                    Handle h = handles[it->second];
-                    ++(*h).count;
-                    heap.increase(h);
+                    int id = it->second;
+                    auto handle_it = handle_map.find(id);
+                    if (handle_it == handle_map.end()) {
+                        // No such handle, insert into heap.
+                        Handle h = heap.push(heap_data(id, 1));
+                        handle_map.insert({id, h});
+                    } else {
+                        Handle h = handle_it->second;
+                        ++(*h).count;
+                        heap.increase(h);
+                    }
                 }
                 ++first;
-                ++second;
-                ++third;
             }
         }
-        std::cout << "Found " << id_to_trigram.size() << " trigrams" << endl;
-        extractNToFile<Trigram>(10000, heap, filename + ".trigrams", id_to_trigram);
-    };
-
-
-    void getFourgrams(const Corpus & corpus, std::string filename) {
-        Heap heap{};
-        Handles handles{};
-
-        for (const auto& s : corpus) {
-            if (s.size() < 4) continue;
-            auto first = s.begin();
-            auto second = s.begin() + 1;
-            auto third = s.begin() + 2;
-            auto fourth = s.begin() + 3;
-            FourgramMap::iterator it;
-            while (fourth != s.end()) {
-                if ((it = fourgram_to_id.find({*first, *second, *third, *fourth})) == fourgram_to_id.end()) {
-                    int id = id_to_fourgram.size();
-                    fourgram_to_id.insert({{*first, *second, *third, *fourth}, id});
-                    id_to_fourgram.push_back({*first, *second, *third, *fourth});
-                    Handle h = heap.push(heap_data(id, 1));
-                    handles.push_back(h);
-                } else {
-                    Handle h = handles[it->second];
-                    ++(*h).count;
-                    heap.increase(h);
-                }
-                ++first;
-                ++second;
-                ++third;
-                ++fourth;
-            }
-        }
-        std::cout << "Found " << id_to_fourgram.size() << " fourgrams" << endl;
-        extractNToFile<Fourgram>(10000, heap, filename + ".fourgrams", id_to_fourgram);
-    };
-
-    void getFivegrams(const Corpus & corpus, std::string filename) {
-        Heap heap{};
-        Handles handles{};
-
-        for (const auto& s : corpus) {
-            if (s.size() < 5) continue;
-            auto first  = s.begin();
-            auto second = s.begin() + 1;
-            auto third  = s.begin() + 2;
-            auto fourth = s.begin() + 3;
-            auto fifth  = s.begin() + 4;
-            FivegramMap::iterator it;
-            //extractNToFile<Bigram>(10000, heap, filename + ".bigrams", id_to_bigram);
-            while (fifth != s.end()) {
-                if ((it = fivegram_to_id.find({*first, *second, *third, *fourth, *fifth})) == fivegram_to_id.end()) {
-                    int id = id_to_fivegram.size();
-                    fivegram_to_id.insert({{*first, *second, *third, *fourth, *fifth}, id});
-                    id_to_fivegram.push_back({*first, *second, *third, *fourth, *fifth});
-                    Handle h = heap.push(heap_data(id, 1));
-                    handles.push_back(h);
-                } else {
-                    Handle h = handles[it->second];
-                    ++(*h).count;
-                    heap.increase(h);
-                }
-                ++first;
-                ++second;
-                ++third;
-                ++fourth;
-                ++fifth;
-            }
-        }
-        std::cout << "Found " << id_to_fivegram.size() << " fivegrams" << endl;
-        extractNToFile<Fivegram>(10000, heap, filename + ".fivegrams", id_to_fivegram);
-    };
+        extractNToFile<Ngram>(10000, heap, filename, id_to_ngram);
+    }
 };
 
 } // namespace bpephrase
