@@ -31,11 +31,6 @@ int main(int argc, char** argv) {
     } else {
         dictionary.loadVocabulary(vocab);
     }
-    int i = 0;
-    for (const auto & entry : dictionary.id_to_word) {
-        std::cout << i++ << '\t' << entry << endl;
-    }
-    exit(1);
 
     dictionary.tokenizeText(dictionary.trainFilename, dictionary.trainCorpus);
     dictionary.tokenizeText(dictionary.validFilename, dictionary.validCorpus);
