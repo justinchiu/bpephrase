@@ -134,7 +134,7 @@ struct Dictionary {
         int id;
         std::string token;
         while (iss >> id) {
-            std::getline(iss, token, '\n');
+            std::getline(iss >> std::ws, token, '\n');
             id_to_word[id] = token;
             word_to_id[token] = id;
         }
