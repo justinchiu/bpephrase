@@ -10,7 +10,7 @@ cxxopts::Options initOptions() {
         ("t,train", "", cxxopts::value<std::string>())
         ("v,valid", "", cxxopts::value<std::string>())
         ("e,test", "", cxxopts::value<std::string>())
-        ("o,output", "", cxxopts::value<std::string>())
+        ("p,vocab", "", cxxopts::value<std::string>())
         ("s,symbols", "", cxxopts::value<int>())
         ("m,minfreq", "", cxxopts::value<int>());
     return options;

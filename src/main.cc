@@ -15,18 +15,27 @@ int main(int argc, char** argv) {
     options.parse(argc, argv);
     std::cout << "hello!" << endl;
 
-    auto train= options["train"].as<std::string>();
+    auto train = options["train"].as<std::string>();
     std::cout << "Train file: " << train<< endl;
-    auto valid= options["valid"].as<std::string>();
+    auto valid = options["valid"].as<std::string>();
     std::cout << "Valid file: " << valid << endl;
-    auto test= options["test"].as<std::string>();
+    auto test = options["test"].as<std::string>();
     std::cout << "Test file: " << test << endl;
-    auto output = options["output"].as<std::string>();
-    std::cout << "Output file: " << output << endl;
+    auto vocab = options["vocab"].as<std::string>();
+    std::cout << "Pre-existing vocab file: " << vocab << endl;
 
-    Dictionary dictionary(train, valid, test, output);
+    Dictionary dictionary(train, valid, test, vocab);
 
-    dictionary.learnVocabulary(dictionary.trainFilename);
+    if (vocab == "") {
+        dictionary.learnVocabulary(dictionary.trainFilename);
+    } else {
+        dictionary.loadVocabulary(vocab);
+    }
+    int i = 0;
+    for (const auto & entry : dictionary.id_to_word) {
+        std::cout << i++ << '\t' << entry << endl;
+    }
+    exit(1);
 
     dictionary.tokenizeText(dictionary.trainFilename, dictionary.trainCorpus);
     dictionary.tokenizeText(dictionary.validFilename, dictionary.validCorpus);

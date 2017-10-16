@@ -14,6 +14,7 @@
 #include <boost/functional/hash.hpp>
 
 namespace bpephrase {
+
 using Token = int;
 using Sentence = std::vector<Token>;
 using Corpus = std::vector<Sentence>;
@@ -59,7 +60,7 @@ struct Dictionary {
     std::string trainFilename;
     std::string validFilename;
     std::string testFilename;
-    std::string outputFilename;
+    std::string vocabFilename;
     Corpus trainCorpus, validCorpus, testCorpus;
 
     int bos;
@@ -90,11 +91,11 @@ struct Dictionary {
       std::string trainFilename, 
       std::string validFilename, 
       std::string testFilename, 
-      std::string outputFilename
+      std::string vocabFilename
     ) : trainFilename(trainFilename), 
         validFilename(validFilename),
         testFilename(testFilename),
-        outputFilename(outputFilename) {
+        vocabFilename(vocabFilename) {
     };
 
     int addWord(const std::string& token); 
@@ -104,6 +105,40 @@ struct Dictionary {
     void learnVocabulary(std::string filename);
 
     void tokenizeText(std::string filename, Corpus & corpus); 
+
+    void loadVocabulary(std::string filename) {
+        // Don't call initializeVocabulary here since other libraries
+        // may do weird things.
+        id_to_word.clear();
+        word_to_id.clear();
+
+        std::ifstream ifs(filename, std::ios::binary);
+        ifs.seekg(0, std::ios::end);
+        std::streampos length = ifs.tellg();
+        ifs.seekg(0, std::ios::beg);
+
+        std::vector<char> buffer(length);
+        ifs.read(&buffer[0], length);
+        std::istringstream iss(std::string(buffer.begin(), buffer.end()));
+
+        // We expect input of the format:
+        // id\ttoken\n
+
+        // First we count the vocab size.
+        int vocabsize = 0;
+        for (const char & c : buffer) {
+            if (c == '\t') { ++vocabsize; }
+        }
+        id_to_word.resize(vocabsize);
+
+        int id;
+        std::string token;
+        while (iss >> id) {
+            std::getline(iss, token, '\n');
+            id_to_word[id] = token;
+            word_to_id[token] = id;
+        }
+    }
 
     void saveTokenization() {
         std::string tokenFilename = trainFilename + ".tokenization";

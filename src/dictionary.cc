@@ -58,6 +58,8 @@ void Dictionary::learnVocabulary(std::string filename) {
     std::vector<char>::iterator end = buffer.begin();
     bool within_word = false;
     while (end != buffer.end()) {
+        // This might drop off the last sentence if it doesn't end in '\n'.
+        // Need to handle early EOF here and in tokenizeText.
         if (*end == ' ' || *end == '\t' || *end == '\r') {
             if (within_word) {
                 // If this is the end of word then we need to add the token.
@@ -142,4 +144,4 @@ void Dictionary::tokenizeText(std::string filename, Corpus & corpus) {
     }
 }
 
-}
+} // namespace bpephrase
