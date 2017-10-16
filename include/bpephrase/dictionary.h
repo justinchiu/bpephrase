@@ -138,6 +138,10 @@ struct Dictionary {
             id_to_word[id] = token;
             word_to_id[token] = id;
         }
+        bos = word_to_id[BOS];
+        eos = word_to_id[EOS];
+        unk = word_to_id[UNK];
+        pad = word_to_id["<blank>"]; // Hack for opennmt compat.
     }
 
     void saveTokenization() {
