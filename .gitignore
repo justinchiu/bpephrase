@@ -1,2 +1,5 @@
 build/*
 bin/*
+
+.mypy_cache
+__pycache__
