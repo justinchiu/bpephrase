@@ -115,7 +115,6 @@ def get_parse(seq, ns, value_fn):
         all_spans.extend(spans)
         all_spans.sort(key=lambda x: x[0])
         remainder = get_remainder(indices, all_spans)
-        print(all_spans, remainder)
     unigrams = map(lambda x: (x,), gen_flatten(remainder))
     all_spans.extend(unigrams)
     all_spans.sort(key=lambda x:x[0])
