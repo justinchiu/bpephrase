@@ -22,10 +22,13 @@ Key = Tuple[str, ...]
 def args():
     import argparse
     parser = argparse.ArgumentParser(description="ngrams.py")
-    parser.add_argument("-t", "--train", type=str, help="Training corpus.")
+    parser.add_argument("-c", "--corpus", type=str, help="Source corpus.")
+    parser.add_argument("-o", "--output", type=str, help="Output corpus.")
     parser.add_argument("-n", "--ngram-orders", type=int, nargs="+", help="The n-gram orders.")
     parser.add_argument("-k", "--topks", type=int, nargs="+", help="The topk n-grams to be considered.")
+    parser.add_argument("-m", "--min-occurrence", type=int, help="The minimum # of occurrences for an ngram.")
     parser.add_argument("-l", "--load", type=str, help="Pre-saved ngram path.")
+    parser.add_argument("-s", "--save", type=str, help="Ngram save path.")
     return parser.parse_args()
 
 def tokenize_corpus(path: str) -> Corpus:
@@ -45,7 +48,7 @@ class Ngrams():
         self.min_occurrence = 10
         self.ngrams: List[typing.Counter[Key]] = []
 
-    def load_ngrams(self, path):
+    def load_ngrams(self, path: str):
         with open(path, "rb") as f:
             # This should be a mapping from (n words) -> count
             self.ngrams = pickle.load(f)
@@ -101,18 +104,31 @@ ns = []
 
 if __name__ == "__main__":
     args = args()
-    #ng = Ngrams([2,3,4,5], [10000] * 4)
-    ns = [2,3,4,5,6,7,8,9,10]
-    ng = Ngrams(ns, [10000] * len(ns), 10)
+    # ngram orders: [2,...,10]
+    # topks = 10k * len(ngram_orders)
+    # min_occ = 10
+    if len(args.topks) == 1:
+        topks = args.topks * len(args.ngram_orders)
+    else:
+        topks = args.topks
+    ng = Ngrams(args.ngram_orders, topks, args.min_occurrence)
 
     #trainpath = "/n/rush_lab/data/iwslt14-de-en/data/iwslt14.tokenized.phrase.de-en/train.en"
-    trainpath = "/n/holylfs/LABS/rush_lab/data/iwslt14-de-en/data/iwslt14.tokenized.phrase.de-en/train.en.baseline2.out"
-    traincorpus = tokenize_corpus(trainpath)
-    ng.construct_ngrams(traincorpus)
+    # Use this one!
+    #trainpath = "/n/holylfs/LABS/rush_lab/data/iwslt14-de-en/data/iwslt14.tokenized.phrase.de-en/train.en.baseline2.out"
+    traincorpus = tokenize_corpus(args.corpus)
+    if args.load:
+        ng.load_ngrams(args.load)
+    else:
+        ng.construct_ngrams(traincorpus)
+        if args.save:
+            ng.dump_ngrams(args.save)
+
     #phrasecorpus = transform_corpus(ng, traincorpus)
     phrasecorpus = transform_corpus_lol(ng, traincorpus)
-    outpath = "/n/holylfs/LABS/rush_lab/data/iwslt14-de-en/data/iwslt14.tokenized.phrase.de-en/train.en.baseline2.out.phrase"
-    with open(outpath, "w") as f:
+    # Use this!
+    #outpath = "/n/holylfs/LABS/rush_lab/data/iwslt14-de-en/data/iwslt14.tokenized.phrase.de-en/train.en.baseline2.out.phrase"
+    with open(args.output, "w") as f:
         for sentence in phrasecorpus:
             f.write(" ".join(sentence))
             f.write("\n")
