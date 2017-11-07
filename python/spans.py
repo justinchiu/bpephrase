@@ -118,7 +118,10 @@ def get_parse(seq, ns, value_fn):
     unigrams = map(lambda x: (x,), gen_flatten(remainder))
     all_spans.extend(unigrams)
     all_spans.sort(key=lambda x:x[0])
-    return map(lambda x: "_".join(map(lambda idx: seq[idx], x)), all_spans)
+    return map(lambda x: map(lambda idx: seq[idx], x), all_spans)
+
+def join_parse(parse):
+    return " ".join(map(lambda x: "_".join(x), parse))
 
 if __name__ == "__main__":
     print("Testing stuff")
@@ -151,5 +154,4 @@ if __name__ == "__main__":
     #parse = get_parse(seq, [2,3], lambda x: value_fn[x])
     #print(parse)
     parse = get_parse(seq, [2,3], lambda x: 1 if x in value_fn else 0)
-    print(list(parse))
-
+    print(join_parse(parse))

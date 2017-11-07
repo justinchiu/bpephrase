@@ -13,7 +13,7 @@ import itertools
 
 import numpy as np
 
-from spans import get_parse
+from spans import get_parse, join_parse
 
 Sen = List[str]
 Corpus = List[Sen]
@@ -23,6 +23,7 @@ def args():
     import argparse
     parser = argparse.ArgumentParser(description="ngrams.py")
     parser.add_argument("-c", "--corpus", type=str, help="Source corpus.")
+    parser.add_argument("-f", "--fit", type=str, help="Fit ngrams to this corpus. Required if constructing.")
     parser.add_argument("-o", "--output", type=str, help="Output corpus.")
     parser.add_argument("-n", "--ngram-orders", type=int, nargs="+", help="The n-gram orders.")
     parser.add_argument("-k", "--topks", type=int, nargs="+", help="The topk n-grams to be considered.")
@@ -54,21 +55,35 @@ class Ngrams():
             self.ngrams = pickle.load(f)
         # Check if n is correct by only looking at first key
         for i, c in enumerate(self.ngrams):
-            assert(len(next(iter(c))) == self.ns[i])
+            assert(len(c) == 0 or len(next(iter(c))) == self.ns[i])
 
     def dump_ngrams(self, path: str):
         with open(path, "wb") as f:
             pickle.dump(self.ngrams, f, pickle.HIGHEST_PROTOCOL)
 
     def construct_ngrams(self, corpus: Corpus):
-        self.dbg = []
+        self.unfiltered = []
         for n, k in zip(self.ns, self.topks):
             c: typing.Counter[Key] = Counter()
             for sentence in corpus:
                 for j in range(len(sentence) - n):
                     c[tuple(sentence[j:j+n])] += 1
-            self.dbg.append(c)
+            self.unfiltered.append(c)
             self.ngrams.append(Counter({k: v for k,v in c.most_common(k) if v > self.min_occurrence}))
+
+    def fit(self, corpus: Corpus):
+        # Filter ngrams from counter if they don't occur.
+        # This needs to be called on 
+        self.unfit_ngrams = self.ngrams
+        nset = set()
+        i = 0
+        for sentence in transform_corpus_lol(self, corpus):
+            for word in sentence:
+                nset.add(tuple(word))
+        self.ngrams = []
+        for ngrams in self.unfit_ngrams:
+            fit_set = nset & set(ngrams)
+            self.ngrams.append(Counter({k: ngrams[k] for k in fit_set}))
 
 def transform_corpus(ngrams: Ngrams, corpus: Corpus):
     pool = Pool(processes=8)
@@ -113,24 +128,26 @@ if __name__ == "__main__":
         topks = args.topks
     ng = Ngrams(args.ngram_orders, topks, args.min_occurrence)
 
-    #trainpath = "/n/rush_lab/data/iwslt14-de-en/data/iwslt14.tokenized.phrase.de-en/train.en"
-    # Use this one!
-    #trainpath = "/n/holylfs/LABS/rush_lab/data/iwslt14-de-en/data/iwslt14.tokenized.phrase.de-en/train.en.baseline2.out"
     traincorpus = tokenize_corpus(args.corpus)
     if args.load:
         ng.load_ngrams(args.load)
-    else:
+        with open(args.output, "w") as f:
+            for sentence in transform_corpus_lol(ng, traincorpus):
+                f.write(join_parse(sentence))
+                f.write("\n")
+    elif args.save and args.fit:
         ng.construct_ngrams(traincorpus)
-        if args.save:
-            ng.dump_ngrams(args.save)
+        ng.fit(tokenize_corpus(args.fit))
+        ng.dump_ngrams(args.save)
+    else:
+        print("HEY! EITHER LOAD OR SAVE.")
 
+    #trainpath = "/n/rush_lab/data/iwslt14-de-en/data/iwslt14.tokenized.phrase.de-en/train.en"
+    # Use this one!
+    #trainpath = "/n/holylfs/LABS/rush_lab/data/iwslt14-de-en/data/iwslt14.tokenized.phrase.de-en/train.en.baseline2.out"
+    #
     #phrasecorpus = transform_corpus(ng, traincorpus)
-    phrasecorpus = transform_corpus_lol(ng, traincorpus)
     # Use this!
     #outpath = "/n/holylfs/LABS/rush_lab/data/iwslt14-de-en/data/iwslt14.tokenized.phrase.de-en/train.en.baseline2.out.phrase"
-    with open(args.output, "w") as f:
-        for sentence in phrasecorpus:
-            f.write(" ".join(sentence))
-            f.write("\n")
     #for x in itertools.islice(phrasecorpus, 10):
     #    print(list(x))
