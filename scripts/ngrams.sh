@@ -8,6 +8,10 @@ TGT_TRAIN_OUT_MACHINE_NATURAL=${ROOT}/train.phrase.machine.natural.en
 TGT_TRAIN_OUT_NATURAL_MACHINE=${ROOT}/train.phrase.natural.machine.en
 TGT_TRAIN_OUT_MACHINE_MACHINE=${ROOT}/train.phrase.machine.machine.en
 TGT_TRAIN_OUT_NATURAL_NATURAL=${ROOT}/train.phrase.natural.natural.en
+TGT_TRAIN_OUT_MACHINE_NATURAL_NODISTILL=${ROOT}/train.phrase.machine.natural.nodistill.en
+TGT_TRAIN_OUT_NATURAL_MACHINE_NODISTILL=${ROOT}/train.phrase.natural.machine.nodistill.en
+TGT_TRAIN_OUT_MACHINE_MACHINE_NODISTILL=${ROOT}/train.phrase.machine.machine.nodistill.en
+TGT_TRAIN_OUT_NATURAL_NATURAL_NODISTILL=${ROOT}/train.phrase.natural.natural.nodistill.en
 
 SRC_VALID=${ROOT}/valid.de
 SRC_VALID_OUT=${ROOT}/valid.phrase.de
@@ -117,7 +121,13 @@ run_ngrams_tgt_machine_natural() {
         --ngram-orders 2 3 4 5 6 7 8 9 10 \
         --topks 10000 \
         --min-occurrence 10 & PIDTGTTRAIN=$!
-    wait $PIDTGTTRAIN && echo "tgt train done!"
+    python /n/home13/jchiu/projects/bpephrase/python/ngrams.py \
+        --corpus $TGT_TRAIN \
+        --output $TGT_TRAIN_OUT_MACHINE_NATURAL_NODISTILL \
+        --load $TGT_SAVE_MACHINE_NATURAL \
+        --ngram-orders 2 3 4 5 6 7 8 9 10 \
+        --topks 10000 \
+        --min-occurrence 10 & PIDTGTTRAINNODISTILL=$!
     python /n/home13/jchiu/projects/bpephrase/python/ngrams.py \
         --corpus $TGT_VALID \
         --output $TGT_VALID_OUT_MACHINE_NATURAL \
@@ -125,6 +135,8 @@ run_ngrams_tgt_machine_natural() {
         --ngram-orders 2 3 4 5 6 7 8 9 10 \
         --topks 10000 \
         --min-occurrence 10 & PIDTGTVALID=$!
+    wait $PIDTGTTRAIN && echo "tgt train done!"
+    wait $PIDTGTTRAINNODISTILL && echo "tgt train no distill done!"
     wait $PIDTGTVALID && echo "tgt valid done!"
 }
 
@@ -146,6 +158,13 @@ run_ngrams_tgt_natural_natural() {
         --topks 10000 \
         --min-occurrence 10 & PIDTGTTRAIN=$!
     python /n/home13/jchiu/projects/bpephrase/python/ngrams.py \
+        --corpus $TGT_TRAIN \
+        --output $TGT_TRAIN_OUT_NATURAL_NATURAL_NODISTILL \
+        --load $TGT_SAVE_NATURAL_NATURAL \
+        --ngram-orders 2 3 4 5 6 7 8 9 10 \
+        --topks 10000 \
+        --min-occurrence 10 & PIDTGTTRAINNODISTILL=$!
+    python /n/home13/jchiu/projects/bpephrase/python/ngrams.py \
         --corpus $TGT_VALID \
         --output $TGT_VALID_OUT_NATURAL_NATURAL \
         --load $TGT_SAVE_NATURAL_NATURAL \
@@ -153,6 +172,7 @@ run_ngrams_tgt_natural_natural() {
         --topks 10000 \
         --min-occurrence 10 & PIDTGTVALID=$!
     wait $PIDTGTTRAIN && echo "tgt train done!"
+    wait $PIDTGTTRAINNODISTILL && echo "tgt train no distill done!"
     wait $PIDTGTVALID && echo "tgt valid done!"
 }
 
@@ -173,7 +193,13 @@ run_ngrams_tgt_machine_machine() {
         --ngram-orders 2 3 4 5 6 7 8 9 10 \
         --topks 10000 \
         --min-occurrence 10 & PIDTGTTRAIN=$!
-    wait $PIDTGTTRAIN && echo "tgt train done!"
+    python /n/home13/jchiu/projects/bpephrase/python/ngrams.py \
+        --corpus $TGT_TRAIN \
+        --output $TGT_TRAIN_OUT_MACHINE_MACHINE_NODISTILL \
+        --load $TGT_SAVE_MACHINE_MACHINE \
+        --ngram-orders 2 3 4 5 6 7 8 9 10 \
+        --topks 10000 \
+        --min-occurrence 10 & PIDTGTTRAINNODISTILL=$!
     python /n/home13/jchiu/projects/bpephrase/python/ngrams.py \
         --corpus $TGT_VALID \
         --output $TGT_VALID_OUT_MACHINE_MACHINE \
@@ -181,6 +207,8 @@ run_ngrams_tgt_machine_machine() {
         --ngram-orders 2 3 4 5 6 7 8 9 10 \
         --topks 10000 \
         --min-occurrence 10 & PIDTGTVALID=$!
+    wait $PIDTGTTRAIN && echo "tgt train done!"
+    wait $PIDTGTTRAINNODISTILL && echo "tgt train no distill done!"
     wait $PIDTGTVALID && echo "tgt valid done!"
 }
 
@@ -189,7 +217,7 @@ run_ngrams_tgt_natural_machine() {
     python /n/home13/jchiu/projects/bpephrase/python/ngrams.py \
         --corpus $TGT_TRAIN \
         --fit $TGT_TRAIN_MACHINE \
-        --save $TGT_SAVE_MACHINE_NATURAL \
+        --save $TGT_SAVE_NATURAL_MACHINE \
         --ngram-orders 2 3 4 5 6 7 8 9 10 \
         --topks 10000 \
         --min-occurrence 10 & PIDTGTGEN=$!
@@ -202,6 +230,13 @@ run_ngrams_tgt_natural_machine() {
         --topks 10000 \
         --min-occurrence 10 & PIDTGTTRAIN=$!
     python /n/home13/jchiu/projects/bpephrase/python/ngrams.py \
+        --corpus $TGT_TRAIN \
+        --output $TGT_TRAIN_OUT_NATURAL_MACHINE_NODISTILL \
+        --load $TGT_SAVE_NATURAL_MACHINE \
+        --ngram-orders 2 3 4 5 6 7 8 9 10 \
+        --topks 10000 \
+        --min-occurrence 10 & PIDTGTTRAINNODISTILL=$!
+    python /n/home13/jchiu/projects/bpephrase/python/ngrams.py \
         --corpus $TGT_VALID \
         --output $TGT_VALID_OUT_NATURAL_MACHINE \
         --load $TGT_SAVE_NATURAL_MACHINE \
@@ -209,6 +244,6 @@ run_ngrams_tgt_natural_machine() {
         --topks 10000 \
         --min-occurrence 10 & PIDTGTVALID=$!
     wait $PIDTGTTRAIN && echo "tgt train done!"
+    wait $PIDTGTTRAINNODISTILL && echo "tgt train no distill done!"
     wait $PIDTGTVALID && echo "tgt valid done!"
 }
-

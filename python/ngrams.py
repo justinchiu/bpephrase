@@ -60,6 +60,12 @@ class Ngrams():
     def dump_ngrams(self, path: str):
         with open(path, "wb") as f:
             pickle.dump(self.ngrams, f, pickle.HIGHEST_PROTOCOL)
+        if self.unfiltered:
+            with open(path + ".unfiltered", "wb") as f:
+                pickle.dump(self.unfiltered, f, pickle.HIGHEST_PROTOCOL)
+        if self.unfit_ngrams:
+            with open(path + ".unfit", "wb") as f:
+                pickle.dump(self.unfit_ngrams, f, pickle.HIGHEST_PROTOCOL)
 
     def construct_ngrams(self, corpus: Corpus):
         self.unfiltered = []
