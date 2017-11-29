@@ -3,7 +3,9 @@ ROOT=/n/rush_lab/data/iwslt14-de-en/data/iwslt14.tokenized.phrase.de-en
 SRC_TRAIN=${ROOT}/train.de
 SRC_TRAIN_OUT=${ROOT}/train.phrase.de
 TGT_TRAIN=${ROOT}/train.en
-TGT_TRAIN_MACHINE=${ROOT}/train.en.baseline2.out
+#TGT_TRAIN_MACHINE=${ROOT}/train.en.baseline3.out
+# Use bidirectional encoder later
+TGT_TRAIN_MACHINE=${ROOT}/train.en.baseline.brnn.out
 TGT_TRAIN_OUT_MACHINE_NATURAL=${ROOT}/train.phrase.machine.natural.en
 TGT_TRAIN_OUT_NATURAL_MACHINE=${ROOT}/train.phrase.natural.machine.en
 TGT_TRAIN_OUT_MACHINE_MACHINE=${ROOT}/train.phrase.machine.machine.en
