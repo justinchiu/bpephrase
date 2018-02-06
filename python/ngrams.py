@@ -28,6 +28,7 @@ def args():
     parser.add_argument("-n", "--ngram-orders", type=int, nargs="+", help="The n-gram orders.")
     parser.add_argument("-k", "--topks", type=int, nargs="+", help="The topk n-grams to be considered.")
     parser.add_argument("-m", "--min-occurrence", type=int, help="The minimum # of occurrences for an ngram.")
+    parser.add_argument("-r", "--repeat-ngrams", action="store_true", help="Repeat an ngram n times if it contains n constituents.")
     parser.add_argument("-l", "--load", type=str, help="Pre-saved ngram path.")
     parser.add_argument("-s", "--save", type=str, help="Ngram save path.")
     return parser.parse_args()
@@ -139,7 +140,7 @@ if __name__ == "__main__":
         ng.load_ngrams(args.load)
         with open(args.output, "w") as f:
             for sentence in transform_corpus_lol(ng, traincorpus):
-                f.write(join_parse(sentence))
+                f.write(join_parse(sentence, args.repeat_ngrams))
                 f.write("\n")
     elif args.save and args.fit:
         ng.construct_ngrams(traincorpus)

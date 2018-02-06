@@ -16,7 +16,7 @@ def enumerative(seq, n, value_fn):
         chunk = [tuple(seq[i:i+n])]
         chunk_val= value_fn(chunk[0])
         for tail, tail_val in enumerative(seq[i+n:], n, value_fn):
-            yield (chunk + tail, chunk_val + tail_val)
+            yield (chunk + tail if chunk_val > 0 else tail, chunk_val + tail_val)
 
 def best_spans(seq, n, value_fn):
     debug = False
@@ -120,8 +120,12 @@ def get_parse(seq, ns, value_fn):
     all_spans.sort(key=lambda x:x[0])
     return map(lambda x: map(lambda idx: seq[idx], x), all_spans)
 
-def join_parse(parse):
-    return " ".join(map(lambda x: "_".join(x), parse))
+def join_parse(parse, repeat_spans):
+    if repeat_spans:
+        parse = [list(item) for item in parse]
+        return " ".join(item for sublist in (["_".join(y)] * len(y) for y in parse) for item in sublist)
+    else:
+        return " ".join("_".join(y) for y in parse)
 
 if __name__ == "__main__":
     print("Testing stuff")
@@ -139,8 +143,8 @@ if __name__ == "__main__":
     for i in range(len(seq)-1):
         value_fn[(seq[i], seq[i+1])] += 1
 
-    #print(brute_force(seq, n, lambda x: 1))
-    #print(brute_force(seq, n, lambda x: value_fn[x]))
+    print(brute_force(seq, n, lambda x: 1 if x in value_fn else 0))
+    print(brute_force(seq, n, lambda x: value_fn[x]))
 
     #print(best_spans(seq, n, lambda x: 1))
     #print(best_spans(seq, n, lambda x: value_fn[x]))
@@ -154,4 +158,7 @@ if __name__ == "__main__":
     #parse = get_parse(seq, [2,3], lambda x: value_fn[x])
     #print(parse)
     parse = get_parse(seq, [2,3], lambda x: 1 if x in value_fn else 0)
-    print(join_parse(parse))
+    #parse = get_parse(seq, [3], lambda x: 1 if x in value_fn else 0)
+    print(join_parse(parse, False))
+    parse = get_parse(seq, [2,3], lambda x: 1 if x in value_fn else 0)
+    print(join_parse(parse, True))
